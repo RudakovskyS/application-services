@@ -1,36 +1,47 @@
 package by.srudakovsky.auth_reg_service.service;
 
+import by.srudakovsky.auth_reg_service.dto.request.RegistrationDto;
+import by.srudakovsky.auth_reg_service.model.ConfirmationCode;
 import by.srudakovsky.auth_reg_service.model.GeneralUserData;
+import by.srudakovsky.auth_reg_service.repository.ConfirmationCodeRepository;
 import by.srudakovsky.auth_reg_service.repository.GeneralUserDataRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.scheduling.annotation.Scheduled;
+import by.srudakovsky.auth_reg_service.util.ConfirmationCodesGenerator;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
 @Service
 public class GeneralUserDataService {
     private final GeneralUserDataRepository generalUserDataRepository;
+    private final ConfirmationCodeRepository confirmationCodeRepository;
 
-    public GeneralUserDataService(GeneralUserDataRepository generalUserDataRepository) {
+    public GeneralUserDataService(GeneralUserDataRepository generalUserDataRepository, ConfirmationCodeRepository confirmationCodeRepository) {
         this.generalUserDataRepository = generalUserDataRepository;
+        this.confirmationCodeRepository = confirmationCodeRepository;
     }
 
-    public List<GeneralUserData> getUsersList() {
-
-        return generalUserDataRepository.findAll();
+    public GeneralUserData registerUser(RegistrationDto registrationDto) {
+        return generalUserDataRepository.save(GeneralUserData.builder()
+                .username(registrationDto.getUsername())
+                .password(registrationDto.getPassword())
+                .build());
     }
 
-    @Scheduled(cron = "1 * * * * *")
-    public void writeUsersData() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        getUsersList().forEach(generalUserData -> {
-            try {
-                System.out.println(objectMapper.writeValueAsString(generalUserData));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    public void updatePhoneNumber(String phoneNumber, String username) {
+        int result = generalUserDataRepository.updatePhoneNumberByUsername(phoneNumber, username);
+        if (result != 0) {
+            confirmationCodeRepository.save(
+                    ConfirmationCode.builder()
+                            .generalUserData(generalUserDataRepository.findByUsername(username))
+                            .code(ConfirmationCodesGenerator.generateConfirmationCode(6, false,
+                                    true, false))
+                            .confirmationTarget(phoneNumber)
+                            .build()
+            );
+        }
     }
 }
