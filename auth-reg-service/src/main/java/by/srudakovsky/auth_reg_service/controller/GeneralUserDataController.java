@@ -21,8 +21,8 @@ public class GeneralUserDataController {
 
     @GetMapping("/users")
     public ResponseEntity<List<GeneralUserData>> displayUsersData() {
-
-        return ResponseEntity.status(HttpStatus.OK).body(generalUserDataService.getUsersList());
+        return null;
+//        return ResponseEntity.status(HttpStatus.OK).body(generalUserDataService.getUsersList());
     }
 
     @PostMapping("/register")

@@ -6,13 +6,7 @@ import by.srudakovsky.auth_reg_service.model.GeneralUserData;
 import by.srudakovsky.auth_reg_service.repository.ConfirmationCodeRepository;
 import by.srudakovsky.auth_reg_service.repository.GeneralUserDataRepository;
 import by.srudakovsky.auth_reg_service.util.ConfirmationCodesGenerator;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.List;
 
 @Service
 public class GeneralUserDataService {
